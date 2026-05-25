@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>KawaL SenyaP • Situbondo</title>
+
+  <!-- Font & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: #050505;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 12px;
+    }
+
+    /* Kartu utama seperti aplikasi mobile */
+    .card {
+      width: 100%;
+      max-width: 420px;
+      height: 92vh;
+      max-height: 860px;
+      background: #141414;
+      border-radius: 40px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Header dengan gradien halus */
+    .header {
+      padding: 24px 20px 16px;
+      background: linear-gradient(180deg, #200000 0%, #111111 100%);
+      border-bottom: 1px solid rgba(255, 0, 0, 0.2);
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    /* LOGO UTAMA - EFEK RED SHADOW MENYALA */
+    .logo-box {
+      width: 78px;
+      height: 78px;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 2px solid #ff1a1a;
+      background: #0b0b0b;
+      /* Efek shadow merah yang dominan */
+      box-shadow: 0 0 30px rgba(255, 0, 0, 0.8), 0 0 60px rgba(255, 0, 0, 0.4);
+      animation: logoGlow 2s infinite alternate;
+      transition: 0.3s;
+    }
+
+    @keyframes logoGlow {
+      0% { box-shadow: 0 0 25px rgba(255, 0, 0, 0.7), 0 0 50px rgba(255, 0, 0, 0.3); }
+      100% { box-shadow: 0 0 40px rgba(255, 30, 30, 1), 0 0 75px rgba(255, 0, 0, 0.6); }
+    }
+
+    .logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .title-text h2 {
+      font-size: 27px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: white;
+      line-height: 1.2;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    }
+
+    .title-text .sub {
+      font-size: 12px;
+      color: #bbbbbb;
+      margin-top: 4px;
+      font-weight: 400;
+    }
+
+    /* Status bar */
+    .status-grid {
+      display: flex;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 18px;
+      padding: 12px 16px;
+      margin: 14px 0 14px;
+      backdrop-filter: blur(4px);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #ddd;
+    }
+
+    .online-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #00ff88;
+      box-shadow: 0 0 14px #00ff88;
+    }
+
+    .time-badge {
+      background: #222;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-weight: 600;
+      color: #fff;
+      font-size: 13px;
+    }
+
+    .progress-wrap {
+      margin: 5px 0 10px;
+    }
+
+    .progress {
+      width: 100%;
+      height: 6px;
+      background: #2a2a2a;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .bar {
+      width: 20%;
+      height: 100%;
+      background: linear-gradient(90deg, #e50914, #ff4d4d);
+      border-radius: 20px;
+      transition: width 0.4s ease;
+    }
+
+    /* SPONSOR: POLRI & PEMKAB SITUBONDO */
+    .sponsor-section {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .sponsor-title {
+      color: #888;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+      letter-spacing: 0.4px;
+    }
+
+    .sponsor-container {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .sponsor-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: #1e1e1e;
+      padding: 6px;
+      object-fit: contain;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: 0.2s;
+    }
+
+    /* Peta */
+    #map {
+      width: 100%;
+      height: 175px;
+      background: #1a1a1a;
+      border-bottom: 1px solid #222;
+    }
+
+    /* Langkah form */
+    .steps-container {
+      flex: 1;
+      padding: 20px 20px 14px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .step {
+      display: none;
+      flex-direction: column;
+      width: 100%;
+      animation: fade 0.3s ease;
+    }
+
+    .step.active {
+      display: flex;
+    }
+
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #ccc;
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 16px 18px;
+      background: #1f1f1f;
+      border: 1px solid #2c2c2c;
+      border-radius: 20px;
+      color: white;
+      font-size: 15px;
+      outline: none;
+      margin-bottom: 20px;
+      transition: 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: #e50914;
+      background: #252525;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 20px;
+      background: #e50914;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
+    }
+
+    .btn-dark {
+      background: #2a2a2a;
+      color: #ddd;
+      box-shadow: none;
+    }
+
+    .btn:hover {
+      background: #ff1a1a;
+    }
+
+    .panic {
+      width: 100%;
+      padding: 18px;
+      margin-top: 16px;
+      border: none;
+      border-radius: 24px;
+      background: #b30000;
+      color: white;
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      animation: pulse 1.3s infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 rgba(255, 0, 0, 0.7); }
+      50% { box-shadow: 0 0 35px rgba(255, 0, 0, 1); }
+      100% { box-shadow: 0 0 0 rgba(255, 0, 0, 0.7); }
+    }
+
+    .footer {
+      text-align: center;
+      padding: 12px;
+      color: #555;
+      font-size: 11px;
+      border-top: 1px solid #1f1f1f;
+    }
+
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 8px 0 18px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 10px;
+      background: #333;
+      transition: 0.3s;
+    }
+
+    .dot.active-dot {
+      background: #e50914;
+      width: 24px;
+    }
+
+    .confirm-text {
+      color: #bbb;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-box">
+        <!-- Logo Kawal Senyap dengan efek red shadow -->
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEitdm7NYv1HjZ-fZxB1roIVmk8PAnD2DdDBsQzDqff3hiKTQEEeQ-wCh3Yu_P-S59sNoA1BzbJ4ARR-CzNfpFY_-AM3yYkx-7nmfRBZyf_TSHSc2h7ZCQXh9UyBquuRFrMPStQPhPz7QEwilTSX83TBJ-Am3ZZMGeXwJnzJOKG9658F899kgFqsyTFeq5M/s1024/1000490374.png" alt="Kawal Senyap Logo">
+      </div>
+      <div class="title-text">
+        <h2>Kawal Senyap</h2>
+        <div class="sub">Situbondo • Pengawalan Malam</div>
+      </div>
+    </div>
+
+    <div class="status-grid">
+      <div class="status-item">
+        <span class="online-dot"></span> Relawan Aktif
+      </div>
+      <div class="status-item">
+        <i class="far fa-clock" style="color:#aaa;"></i> 
+        <span class="time-badge">±7 menit</span>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress">
+        <div class="bar" id="progressBar" style="width: 20%;"></div>
+      </div>
+    </div>
+
+    <!-- SPONSOR DENGAN LOGO POLRI DAN PEMKAB SITUBONDO -->
+    <div class="sponsor-section">
+      <span class="sponsor-title">Didukung oleh</span>
+      <div class="sponsor-container">
+        <!-- Logo POLRI -->
+        <img class="sponsor-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Logo_of_the_Indonesian_National_Police.svg/1200px-Logo_of_the_Indonesian_National_Police.svg.png" alt="POLRI" title="Kepolisian Republik Indonesia">
+        <!-- Logo Pemkab Situbondo (versi resmi dari lambang daerah) -->
+        <img class="sponsor-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Lambang_Kabupaten_Situbondo.png/800px-Lambang_Kabupaten_Situbondo.png" alt="Pemkab Situbondo" title="Pemerintah Kabupaten Situbondo">
+      </div>
+    </div>
+  </div>
+
+  <!-- PETA -->
+  <div id="map"></div>
+
+  <!-- STEPS -->
+  <div class="steps-container">
+    <div class="step-indicator" id="stepDots">
+      <span class="dot active-dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="step active" id="step1">
+      <label><i class="far fa-user-circle"></i> Nama Lengkap</label>
+      <input type="text" id="nama" placeholder="Masukkan nama Anda">
+      <button class="btn" onclick="nextStep()">Lanjut <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step" id="step2">
+      <label><i class="fas fa-motorcycle"></i> Kendaraan</label>
+      <select id="kendaraan">
+        <option>Motor</option>
+        <option>Mobil</option>
+        <option>Lainnya</option>
+      </select>
+      <button class="btn" onclick="nextStep()">Lanjut <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step" id="step3">
+      <label><i class="fas fa-map-pin"></i> Lokasi Jemput</label>
+      <input type="text" id="jemput" placeholder="Ketuk tombol di bawah" readonly>
+      <button class="btn btn-dark" onclick="getLocation()"><i class="fas fa-crosshairs"></i> Ambil Lokasi Saya</button>
+      <button class="btn" onclick="nextStep()" style="margin-top:12px;">Lanjut</button>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step" id="step4">
+      <label><i class="fas fa-flag-checkered"></i> Tujuan</label>
+      <input type="text" id="tujuan" placeholder="Masukkan alamat tujuan">
+      <button class="btn" onclick="nextStep()">Lanjut</button>
+    </div>
+
+    <!-- STEP 5 KONFIRMASI -->
+    <div class="step" id="step5">
+      <div style="text-align: center; margin-bottom: 12px;">
+        <i class="fas fa-check-circle" style="font-size: 42px; color: #e50914;"></i>
+        <h3 style="margin: 10px 0 8px;">Konfirmasi</h3>
+      </div>
+      <p class="confirm-text">
+        Pastikan data sudah benar. Relawan akan segera dihubungi melalui WhatsApp.
+      </p>
+      <button class="btn" onclick="kirimWA()"><i class="fab fa-whatsapp"></i> Minta Pengawalan</button>
+      <button class="panic" onclick="panicSOS()"><i class="fas fa-exclamation-triangle"></i> PANIC SOS</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    © 2026 KawaL SenyaP Situbondo • #AmanBersama
+  </div>
+</div>
+
+<script>
+  let currentStep = 0;
+  const steps = document.querySelectorAll(".step");
+  const progressBar = document.getElementById("progressBar");
+  const dots = document.querySelectorAll("#stepDots .dot");
+
+  function updateUI() {
+    steps.forEach((s, i) => {
+      s.classList.toggle("active", i === currentStep);
+    });
+    
+    let percent = ((currentStep + 1) * 20);
+    progressBar.style.width = percent + "%";
+
+    dots.forEach((dot, idx) => {
+      dot.classList.toggle("active-dot", idx === currentStep);
+    });
+  }
+
+  function nextStep() {
+    const activeStep = steps[currentStep];
+    const input = activeStep.querySelector("input:not([readonly]), select");
+    
+    if (input && input.value.trim() === "") {
+      alert("Harap isi data terlebih dahulu.");
+      return;
+    }
+
+    if (currentStep < steps.length - 1) {
+      currentStep++;
+      updateUI();
+    }
+  }
+
+  // Variabel peta & marker
+  let latitude = "", longitude = "";
+  let marker;
+
+  var map = L.map('map', {
+    zoomControl: false,
+    attributionControl: false
+  }).setView([-7.7066, 114.0098], 13);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  function getLocation() {
+    if (!navigator.geolocation) {
+      alert("Geolokasi tidak didukung browser ini.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
+
+        document.getElementById("jemput").value = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+
+        if (marker) {
+          map.removeLayer(marker);
+        }
+
+        marker = L.marker([latitude, longitude], {
+          icon: L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+          })
+        }).addTo(map).bindPopup("📍 Posisi Anda").openPopup();
+
+        map.setView([latitude, longitude], 16);
+      },
+      (error) => {
+        alert("Gagal mengambil lokasi. Pastikan GPS aktif.");
+      },
+      { enableHighAccuracy: true }
+    );
+  }
+
+  function kirimWA() {
+    const nama = document.getElementById("nama").value.trim();
+    const kendaraan = document.getElementById("kendaraan").value;
+    const jemput = document.getElementById("jemput").value.trim();
+    const tujuan = document.getElementById("tujuan").value.trim();
+
+    if (!nama || !jemput || !tujuan) {
+      alert("Lengkapi nama, lokasi jemput, dan tujuan.");
+      return;
+    }
+
+    const mapsLink = latitude && longitude 
+      ? `https://maps.google.com/?q=${latitude},${longitude}` 
+      : "Lokasi belum diambil";
+
+    const pesan = `Halo Admin KawaL SenyaP,%0A%0A` +
+                  `Saya ingin meminta pengawalan.%0A%0A` +
+                  `👤 Nama : ${nama}%0A` +
+                  `🏍️ Kendaraan : ${kendaraan}%0A` +
+                  `📍 Jemput : ${jemput}%0A` +
+                  `🏁 Tujuan : ${tujuan}%0A` +
+                  `🗺️ Live Maps : ${mapsLink}`;
+
+    window.open(`https://wa.me/6283852330333?text=${pesan}`, '_blank');
+  }
+
+  function panicSOS() {
+    const mapsLink = latitude && longitude 
+      ? `https://maps.google.com/?q=${latitude},${longitude}` 
+      : "Lokasi belum tersedia";
+
+    const pesan = `🚨 SOS DARURAT 🚨%0A%0A` +
+                  `Saya membutuhkan bantuan segera!%0A` +
+                  `📍 Lokasi Saya : ${mapsLink}`;
+
+    window.open(`https://wa.me/6283852330333?text=${pesan}`, '_blank');
+  }
+
+  updateUI();
+</script>
+</body>
+</html>
